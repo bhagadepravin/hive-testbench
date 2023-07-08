@@ -3,7 +3,7 @@ hive-testbench
 
 A testbench for experimenting with Apache Hive at any data scale.
 
-yum install git maven wget unzip -y && git clone https://github.com/bhagadepravin/hive-testbench.git && cd hive-testbench && ./tpcds-build.sh 
+`yum install git maven wget unzip -y && git clone https://github.com/bhagadepravin/hive-testbench.git && cd hive-testbench && ./tpcds-build.sh`
 
 Overview
 ========
