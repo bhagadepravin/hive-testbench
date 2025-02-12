@@ -18,8 +18,8 @@ target/lib/dsdgen.jar: target/tools/dsdgen
 target/tools/dsdgen: target/tpcds_kit.zip
 	test -d target/tools/ || (cd target; unzip tpcds_kit.zip)
 	test -d target/tools/ || (cd target; mv */tools tools)
-	cd target/tools; cat ../../patches/all/*.patch | patch -p0 -r -
-	cd target/tools; cat ../../patches/${MYOS}/*.patch | patch -p1 -r -
+	cd target/tools; cat ../../patches/all/*.patch | patch -p0 --batch
+	cd target/tools; cat ../../patches/${MYOS}/*.patch | patch -p1 --batch
 	cd target/tools; make clean; make dsdgen
 
 clean:
