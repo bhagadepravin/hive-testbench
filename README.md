@@ -6,10 +6,8 @@ Custom hive-site
 hive.security.authorization.sqlstd.confwhitelist=mapred.*|hive.*|mapreduce.*|spark.*|tez.*|SCALE|PARTS|LOCATION|TPCHBIN
 hive.security.authorization.sqlstd.confwhitelist.append=mapred.*|hive.*|mapreduce.*|spark.*|tez.*|SCALE|PARTS|LOCATION|TPCHBIN
 ```
-```
-yum install git maven wget unzip gcc -y && git clone https://github.com/bhagadepravin/hive-testbench.git && cd hive-testbench && ./tpcds-build.sh && FORMAT=rcfile ./tpcds-setup.sh 2 && FORMAT=rcfile ./tpcds-setup.sh 2
-```
 
+`yum install git maven wget unzip gcc -y && git clone https://github.com/bhagadepravin/hive-testbench.git && cd hive-testbench && ./tpcds-build.sh && FORMAT=rcfile ./tpcds-setup.sh 2 && FORMAT=rcfile ./tpcds-setup.sh 2`
 
 A testbench for experimenting with Apache Hive at any data scale.
 
