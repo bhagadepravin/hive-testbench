@@ -12,7 +12,6 @@ hive.security.authorization.sqlstd.confwhitelist.append=mapred.*|hive.*|mapreduc
 ```
 sed -i "s/localhost/$(hostname -f)/g" tpcds-setup.sh load_rcfile_*.mk
 # export DEBUG_SCRIPT=1
-
 ```
 A testbench for experimenting with Apache Hive at any data scale.
 
