@@ -9,6 +9,10 @@ hive.security.authorization.sqlstd.confwhitelist.append=mapred.*|hive.*|mapreduc
 
 `yum install git maven wget patch unzip gcc -y && git clone https://github.com/bhagadepravin/hive-testbench.git && cd hive-testbench && ./tpcds-build.sh && FORMAT=rcfile ./tpcds-setup.sh 2 && FORMAT=rcfile ./tpcds-setup.sh 2`
 
+```
+sed -i 's/localhost/odp-master02.centos7.accelo.com/g' tpcds-setup.sh
+sed -i 's/localhost/odp-master02.centos7.accelo.com/g' load_rcfile_2.mk
+```
 A testbench for experimenting with Apache Hive at any data scale.
 
 Overview
