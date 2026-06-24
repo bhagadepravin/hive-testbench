@@ -1,0 +1,139 @@
+---
+- name: Install required packages for Hive Testbench
+  yum:
+    name:
+      - git
+      - maven
+      - wget
+      - unzip
+      - gcc
+      - gcc-c++
+      - make
+      - flex
+      - bison
+      - byacc
+      - patch
+    state: present
+  when: hive_datagen_enabled | default(false) | bool
+
+- name: Clone Hive Testbench repository
+  git:
+    repo: https://github.com/bhagadepravin/hive-testbench.git
+    dest: /opt/hive-testbench
+    force: yes
+  when: hive_datagen_enabled | default(false) | bool
+
+- name: Run kinit using smokeuser keytab (MIT KDC only)
+  shell: >
+    kinit -kt /etc/security/keytabs/smokeuser.headless.keytab $(
+      klist -kt /etc/security/keytabs/smokeuser.headless.keytab | awk 'NR==4 {print $NF}'
+    )
+  when:
+    - hive_datagen_enabled | default(false) | bool
+    - security == "mit-kdc"
+  ignore_errors: yes
+
+# ── TPC-DS ──────────────────────────────────────────────────────────────────
+
+- name: Check whether tpcds-gen jar already exists
+  stat:
+    path: /opt/hive-testbench/tpcds-gen/target/tpcds-gen-1.0-SNAPSHOT.jar
+  register: tpcds_gen_jar
+  when: hive_datagen_enabled | default(false) | bool
+
+- name: Wipe stale tpcds-gen build state for a clean run
+  file:
+    path: /opt/hive-testbench/tpcds-gen/target
+    state: absent
+  when:
+    - hive_datagen_enabled | default(false) | bool
+    - not tpcds_gen_jar.stat.exists
+
+- name: Run tpcds-build.sh (extracts kit, applies patches, injects -fcommon for GCC 10+)
+  command: ./tpcds-build.sh
+  args:
+    chdir: /opt/hive-testbench
+  register: tpcds_build_result
+  failed_when: false
+  changed_when: true
+  when:
+    - hive_datagen_enabled | default(false) | bool
+    - not tpcds_gen_jar.stat.exists
+
+
+- name: Verify tpcds-gen jar was produced
+  stat:
+    path: /opt/hive-testbench/tpcds-gen/target/tpcds-gen-1.0-SNAPSHOT.jar
+  register: tpcds_gen_jar_post
+  when: hive_datagen_enabled | default(false) | bool
+
+- name: Fail fast if tpcds-gen jar is missing after build
+  fail:
+    msg: >-
+      tpcds-build.sh did not produce
+      /opt/hive-testbench/tpcds-gen/target/tpcds-gen-1.0-SNAPSHOT.jar.
+      Common causes: maven not installed, JDK incompatibility, missing build tools
+      (gcc/make/flex/bison/patch), GCC 10+ -fno-common default, or network
+      failure pulling the TPC-DS DSGen tarball.
+  when:
+    - hive_datagen_enabled | default(false) | bool
+    - not tpcds_gen_jar_post.stat.exists
+
+# ── TPC-H ───────────────────────────────────────────────────────────────────
+
+- name: Check whether tpch-gen jar already exists
+  stat:
+    path: /opt/hive-testbench/tpch-gen/target/tpch-gen-1.0-SNAPSHOT.jar
+  register: tpch_gen_jar
+  when: hive_datagen_enabled | default(false) | bool
+
+- name: Wipe stale tpch-gen build state for a clean run
+  file:
+    path: /opt/hive-testbench/tpch-gen/target
+    state: absent
+  when:
+    - hive_datagen_enabled | default(false) | bool
+    - not tpch_gen_jar.stat.exists
+
+- name: Run tpch-build.sh (downloads dbgen from GitHub, compiles)
+  command: ./tpch-build.sh
+  args:
+    chdir: /opt/hive-testbench
+  register: tpch_build_result
+  failed_when: false
+  changed_when: true
+  when:
+    - hive_datagen_enabled | default(false) | bool
+    - not tpch_gen_jar.stat.exists
+
+
+- name: Verify tpch-gen jar was produced
+  stat:
+    path: /opt/hive-testbench/tpch-gen/target/tpch-gen-1.0-SNAPSHOT.jar
+  register: tpch_gen_jar_post
+  when: hive_datagen_enabled | default(false) | bool
+
+- name: Fail fast if tpch-gen jar is missing after build
+  fail:
+    msg: >-
+      tpch-build.sh did not produce
+      /opt/hive-testbench/tpch-gen/target/tpch-gen-1.0-SNAPSHOT.jar.
+      Common causes: maven not installed, JDK incompatibility, missing build tools
+      (gcc/make/patch/wget), GCC 10+ -fno-common default, or network failure
+      pulling the TPC-H dbgen source from GitHub.
+  when:
+    - hive_datagen_enabled | default(false) | bool
+    - not tpch_gen_jar_post.stat.exists
+
+# ── Data Generation ──────────────────────────────────────────────────────────
+
+- name: Note Data generation is time-consuming (may take 30min to 1 hour)
+  debug:
+    msg: "Generating TPC-DS data can be a time-consuming process. Depending on your hardware, this may take between 30 minutes to 1 hour."
+  when: hive_datagen_enabled | default(false) | bool
+
+- name: Run tpcds-setup.sh to generate data (1st pass)
+  shell: FORMAT=rcfile ./tpcds-setup.sh 2
+  args:
+    chdir: /opt/hive-testbench
+  when: hive_datagen_enabled | default(false) | bool

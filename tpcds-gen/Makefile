@@ -20,6 +20,7 @@ target/tools/dsdgen: target/tpcds_kit.zip
 	test -d target/tools/ || (cd target; mv */tools tools)
 	cd target/tools; cat ../../patches/all/*.patch | patch -p0 --batch
 	cd target/tools; cat ../../patches/${MYOS}/*.patch | patch -p1 --batch
+	[ "$(MYOS)" != "Linux" ] || echo 'CFLAGS += -fcommon' >> target/tools/makefile
 	cd target/tools; make clean; make dsdgen
 
 clean:

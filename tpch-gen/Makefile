@@ -16,6 +16,7 @@ target/lib/dbgen.jar: target/tools/dbgen
 target/tools/dbgen: target/tpch_kit.zip
 	test -d target/tools/ || (cd target; unzip -q tpch_kit.zip; mv tpch-dbgen-master tools)
 	test ! -d patches/${MYOS} || (cd target/tools && cat ../../patches/${MYOS}/*.patch | patch -p0 --batch)
+	[ "$(MYOS)" != "Linux" ] || echo 'CFLAGS += -fcommon' >> target/tools/makefile.suite
 	cd target/tools; make -f makefile.suite clean; make -f makefile.suite CC=gcc DATABASE=ORACLE MACHINE=LINUX WORKLOAD=TPCH
 
 clean:
