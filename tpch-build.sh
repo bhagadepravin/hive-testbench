@@ -9,6 +9,13 @@ for f in gcc javac; do
 	fi
 done
 
+# Ensure JAVA_HOME is set and jar is on PATH
+if [ -z "$JAVA_HOME" ]; then
+	JAVA_HOME=$(dirname $(dirname $(readlink -f $(which javac))))
+	export JAVA_HOME
+fi
+export PATH=$PATH:$JAVA_HOME/bin
+
 # Check if Maven is installed and install it if not.
 which mvn > /dev/null 2>&1
 if [ $? -ne 0 ]; then
