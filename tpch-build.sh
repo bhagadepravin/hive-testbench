@@ -11,7 +11,7 @@ done
 
 # Ensure JAVA_HOME is set and jar is on PATH
 if [ -z "$JAVA_HOME" ]; then
-	JAVA_HOME=$(dirname $(dirname $(readlink -f $(which javac))))
+	JAVA_HOME=$(dirname "$(dirname "$(readlink -f "$(which javac)")")")
 	export JAVA_HOME
 fi
 export PATH=$PATH:$JAVA_HOME/bin
